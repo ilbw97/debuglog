@@ -1,7 +1,9 @@
 package debuglog
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"sort"
@@ -39,7 +41,7 @@ func sortCustom(fields []string) {
 	})
 }
 
-func DebugLogInit(logname string) *logrus.Logger {
+func DebugLogInit(logname string, makedir bool) *logrus.Logger {
 
 	debuglogrus := logrus.New()
 	debugFormatter := &logrus.TextFormatter{
@@ -54,6 +56,8 @@ func DebugLogInit(logname string) *logrus.Logger {
 	debuglogrus.SetFormatter(debugFormatter)
 
 	// path
+	var logpath string
+
 	baselogpath, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Cannot get CurrentDirectory")
@@ -62,8 +66,22 @@ func DebugLogInit(logname string) *logrus.Logger {
 		baselogpath = "./"
 	}
 
+	var makepath string
+	if !makedir {
+		logpath = baselogpath
+	} else {
+		makepath = baselogpath + "/log"
+		if _, err := os.Stat(makepath); errors.Is(err, os.ErrNotExist) {
+			err := os.Mkdir(makepath, os.ModePerm)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		logpath = makepath
+	}
+
 	// WAF LOG OUTPUT SETTING
-	debuglogpath := fmt.Sprintf("%s/%s.%d.log", baselogpath, logname, os.Getpid())
+	debuglogpath := fmt.Sprintf("%s/%s.%d.log", logpath, logname, os.Getpid())
 	debugLogOutput := lumberjack.Logger{
 		Filename:   debuglogpath,
 		MaxSize:    500,
