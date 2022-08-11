@@ -3,7 +3,6 @@ package debuglog
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 	"sort"
@@ -62,6 +61,7 @@ func DebugLogInit(logname string, makedir bool) *logrus.Logger {
 	if err != nil {
 		fmt.Println("Cannot get CurrentDirectory")
 	}
+	fmt.Println("baselogpath :" + baselogpath)
 	if len(baselogpath) == 0 {
 		baselogpath = "./"
 	}
@@ -71,10 +71,12 @@ func DebugLogInit(logname string, makedir bool) *logrus.Logger {
 		logpath = baselogpath
 	} else {
 		makepath = baselogpath + "/log"
+		fmt.Println("makepath :" + makepath)
 		if _, err := os.Stat(makepath); errors.Is(err, os.ErrNotExist) {
 			err := os.Mkdir(makepath, os.ModePerm)
 			if err != nil {
-				log.Println(err)
+				fmt.Println("Cannot make log Directory" + err.Error())
+				fmt.Println("Trying to logging at Current Directory")
 			}
 		}
 		logpath = makepath
