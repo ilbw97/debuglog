@@ -1,4 +1,4 @@
-module debuglog
+module github.com/ilbw97/debulog
 
 go 1.18
 
