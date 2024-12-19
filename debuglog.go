@@ -107,5 +107,6 @@ func DebugLogInit(logname string, makedir bool, usePID bool, useMultiWriter bool
 		debuglogrus.SetOutput(debugLogOutput)
 	}
 
+	fmt.Printf("Logging to %s\n", debuglogpath)
 	return debuglogrus
 }
