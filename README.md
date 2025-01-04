@@ -34,7 +34,7 @@ go get github.com/ilbw97/debuglog
 ```go
 package main
 import (
-    debuglog "github.com/yourusername/debuglog"
+    debuglog "github.com/ilbw97/debuglog"
 
 )
 func main() {
