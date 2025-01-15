@@ -13,6 +13,21 @@ import (
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
+type LogConfig struct {
+	LogName     string `json:"name"`
+	MakeDir     bool	`json:"make_dir" example:"true"`
+	UsePID      bool	`json:"use_pid" exmaple:"true"`
+	UseMultiWriter bool	`json:"use_multi_writer" example:"false"`
+	LogRotateConfig
+}
+
+type LogRotateConfig struct {
+	MaxSize int `json:"max_size" exmaple:"500"`
+	MaxBackups int `json:"max_backups" example:"3"`
+	MaxAge int `json:"max_age" example:"3"`
+	Compress bool `json:"compress" exmaple:"true"`
+}
+
 // findFunc formats the function name and line number for log output.
 func findFunc(f *runtime.Frame) (string, string) {
 	s := strings.Split(f.Function, ".")
@@ -45,8 +60,10 @@ func sortCustom(fields []string) {
 	})
 }
 
+
+
 // DebugLogInit initializes a logger with flexible options.
-func DebugLogInit(logname string, makedir bool, usePID bool, useMultiWriter bool) *logrus.Logger {
+func DebugLogInit(options *LogOptions) *logrus.Logger {
 	debuglogrus := logrus.New()
 
 	// Set log formatter
@@ -72,7 +89,7 @@ func DebugLogInit(logname string, makedir bool, usePID bool, useMultiWriter bool
 		}
 	}
 
-	if makedir {
+	if options.MakeDir {
 		makepath := fmt.Sprintf("%s/log", baselogpath)
 		if err := os.MkdirAll(makepath, os.ModePerm); err != nil {
 			fmt.Printf("Cannot make log Directory: %s\n", err.Error())
@@ -86,21 +103,21 @@ func DebugLogInit(logname string, makedir bool, usePID bool, useMultiWriter bool
 	}
 
 	var debuglogpath string
-	if usePID {
-		debuglogpath = fmt.Sprintf("%s/%s.%d.log", logpath, logname, os.Getpid())
+	if options.UsePID {
+		debuglogpath = fmt.Sprintf("%s/%s.%d.log", logpath, options.LogName, os.Getpid())
 	} else {
-		debuglogpath = fmt.Sprintf("%s/%s.%s.log", logpath, logname, time.Now().Format("20060102_150405"))
+		debuglogpath = fmt.Sprintf("%s/%s.%s.log", logpath, options.LogName, time.Now().Format("20060102_150405"))
 	}
 
 	debugLogOutput := &lumberjack.Logger{
 		Filename:   debuglogpath,
-		MaxSize:    500,  // Max file size in MB
-		MaxBackups: 3,    // Max backup files
-		MaxAge:     3,    // Max age in days
-		Compress:   true, // Enable compression
+		MaxSize:    options.MaxSize,  // Max file size in MB
+		MaxBackups: options.MaxBackups,    // Max backup files
+		MaxAge:     options.MaxAge,    // Max age in days
+		Compress:   options.Compress, // Enable compression
 	}
 
-	if useMultiWriter {
+	if options.UseMultiWriter {
 		multiWriter := io.MultiWriter(debugLogOutput, os.Stdout)
 		debuglogrus.SetOutput(multiWriter)
 	} else {
@@ -108,5 +125,6 @@ func DebugLogInit(logname string, makedir bool, usePID bool, useMultiWriter bool
 	}
 
 	fmt.Printf("Logging to %s\n", debuglogpath)
+
 	return debuglogrus
 }
