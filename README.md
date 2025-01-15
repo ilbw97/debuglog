@@ -35,13 +35,25 @@ go get github.com/ilbw97/debuglog
 package main
 import (
     debuglog "github.com/ilbw97/debuglog"
-
 )
 func main() {
-    // 로거 초기화logger := debuglog.DebugLogInit("myapp", true, true, true)
     // 로그 메시지 출력
-    logger.Info("This is an info message.")
-    logger.Error("This is an error message.")
+    config := &debuglog.LogConfig{
+        LogName:     "myapp",
+        MakeDir:     true,
+        UsePID:      true,
+        UseMultiWriter: true,
+        LogRotateConfig: debuglog.LogRotateConfig{
+            MaxSize:    100,
+            MaxBackups: 5,
+            MaxAge:     7,
+            Compress:   true,
+        },
+    }
+
+    log := DebugLogInit(config)
+    log.Info("This is an info message.")
+    log.Error("This is an error message.")
 }
 ```
 
@@ -55,14 +67,7 @@ func main() {
 func DebugLogInit(options *LogConfig) *logrus.Logger
 ```
 
-| 매개변수         | 타입     | 설명                                                                           |
-| ---------------- | -------- | ------------------------------------------------------------------------------ |
-| `logname`        | `string` | 로그 파일 이름의 기본값 (확장자는 자동으로 추가됨).                            |
-| `makedir`        | `bool`   | 로그 디렉토리를 생성할지 여부 (`true`: 생성, `false`: 현재 디렉토리 사용).     |
-| `usePID`         | `bool`   | 로그 파일 이름에 PID를 포함할지 여부 (`true`: 포함, `false`: 미포함).          |
-| `useMultiWriter` | `bool`   | 로그를 콘솔과 파일에 동시에 출력할지 여부 (`true`: 활성화, `false`: 비활성화). |
-
----
+## | 필드 | 타입 | 설명 | 기본값 | 예시 | |------|------|------|--------|------| | LogName | string | 로그 파일의 기본 이름을 설정합니다. 로그 파일은 이 이름을 기반으로 생성됩니다. | 없음 | "myapp" | | MakeDir | bool | 로그 디렉토리를 자동으로 생성할지 여부를 결정합니다. | false | true | | UsePID | bool | 로그 파일 이름에 프로세스 ID(PID)를 포함할지 여부를 설정합니다. | false | true | | UseMultiWriter | bool | 로그를 파일뿐만 아니라 콘솔에도 출력할지 여부를 설정합니다. | false | true |
 
 ## **구조체 (Structs)**
 
