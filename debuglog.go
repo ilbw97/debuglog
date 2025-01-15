@@ -15,11 +15,11 @@ import (
 )
 
 type LogConfig struct {
-	LogName        string `json:"name"`
-	MakeDir        bool   `json:"make_dir" example:"true"`
-	UsePID         bool   `json:"use_pid" example:"true"`
-	UseMultiWriter bool   `json:"use_multi_writer" example:"false"`
-	LogRotateConfig
+	LogName         string `json:"name"`
+	MakeDir         bool   `json:"make_dir" example:"true"`
+	UsePID          bool   `json:"use_pid" example:"true"`
+	UseMultiWriter  bool   `json:"use_multi_writer" example:"false"`
+	LogRotateConfig `json:"rotate_config"`
 }
 
 type LogRotateConfig struct {
@@ -137,17 +137,17 @@ func determineLogPath(config *LogConfig) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("cannot get current directory: %w", err)
 		}
-		
-        logrus.Infof("LOG_BASE_PATH not set. Using working directory: %s", baselogpath)
-    }
+
+		logrus.Infof("LOG_BASE_PATH not set. Using working directory: %s", baselogpath)
+	}
 
 	if config.MakeDir {
-        makepath := fmt.Sprintf("%s/log", baselogpath)
-        if err := os.MkdirAll(makepath, os.FileMode(os.O_RDWR)); err != nil {
-            return "", fmt.Errorf("cannot create log directory: %w", err)
-        }
-        return makepath, nil
-    }
+		makepath := fmt.Sprintf("%s/log", baselogpath)
+		if err := os.MkdirAll(makepath, os.FileMode(os.O_RDWR)); err != nil {
+			return "", fmt.Errorf("cannot create log directory: %w", err)
+		}
+		return makepath, nil
+	}
 
-    return baselogpath,nil 
+	return baselogpath, nil
 }

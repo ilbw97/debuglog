@@ -51,7 +51,7 @@ func main() {
         },
     }
 
-    log := DebugLogInit(config)
+    log := LogInit(config)
     log.Info("This is an info message.")
     log.Error("This is an error message.")
 }
@@ -59,15 +59,22 @@ func main() {
 
 ### **2. 함수 설명**
 
-#### `DebugLogInit`
+#### `LogInit`
 
-`DebugLogInit` 함수는 로거를 초기화하며 다음과 같은 매개변수를 제공합니다:
+`LogInit` 함수는 로거를 초기화하며 다음과 같은 매개변수를 제공합니다:
 
 ```go
-func DebugLogInit(options *LogConfig) *logrus.Logger
+func LogInit(options *LogConfig) *logrus.Logger
 ```
 
-## | 필드 | 타입 | 설명 | 기본값 | 예시 | |------|------|------|--------|------| | LogName | string | 로그 파일의 기본 이름을 설정합니다. 로그 파일은 이 이름을 기반으로 생성됩니다. | 없음 | "myapp" | | MakeDir | bool | 로그 디렉토리를 자동으로 생성할지 여부를 결정합니다. | false | true | | UsePID | bool | 로그 파일 이름에 프로세스 ID(PID)를 포함할지 여부를 설정합니다. | false | true | | UseMultiWriter | bool | 로그를 파일뿐만 아니라 콘솔에도 출력할지 여부를 설정합니다. | false | true |
+| 매개변수         | 타입     | 설명                                                                           |
+| ---------------- | -------- | ------------------------------------------------------------------------------ |
+| `logname`        | `string` | 로그 파일 이름의 기본값 (확장자는 자동으로 추가됨).                            |
+| `makedir`        | `bool`   | 로그 디렉토리를 생성할지 여부 (`true`: 생성, `false`: 현재 디렉토리 사용).     |
+| `usePID`         | `bool`   | 로그 파일 이름에 PID를 포함할지 여부 (`true`: 포함, `false`: 미포함).          |
+| `useMultiWriter` | `bool`   | 로그를 콘솔과 파일에 동시에 출력할지 여부 (`true`: 활성화, `false`: 비활성화). |
+
+---
 
 ## **구조체 (Structs)**
 
@@ -125,14 +132,14 @@ logConfig := &debuglog.LogConfig{
 -   로그 파일 이름 형식: `myapp.<PID>.log`
 
 ```go
-logger := debuglog.DebugLogInit("myapp", true, true, false)
+logger := debuglog.LogInit("myapp", true, true, false)
 ```
 
 -   **PID 미사용 (`usePID=false`)**
 -   로그 파일 이름 형식: `myapp.<YYYYMMDD_HHMMSS>.log`
 
 ```go
-logger := debuglog.DebugLogInit("myapp", true, false, false)
+logger := debuglog.LogInit("myapp", true, false, false)
 ```
 
 ### **MultiWriter 사용 여부**
@@ -141,14 +148,14 @@ logger := debuglog.DebugLogInit("myapp", true, false, false)
 -   로그가 콘솔(`os.Stdout`)과 파일에 동시에 출력됩니다.
 
 ```go
-logger := debuglog.DebugLogInit("myapp", true, false, true)
+logger := debuglog.LogInit("myapp", true, false, true)
 ```
 
 -   **MultiWriter 미사용 (`useMultiWriter=false`)**
 -   로그가 파일에만 저장됩니다.
 
 ```go
-logger := debuglog.DebugLogInit("myapp", true, false, false)
+logger := debuglog.LogInit("myapp", true, false, false)
 ```
 
 ---
@@ -205,7 +212,7 @@ func main() {
             Compress:   true,
         },
     }
-    logger := debuglog.DebugLogInit(logConfig)
+    logger := debuglog.LogInit(logConfig)
 
     // 로그 메시지 출력
     logger.Info("This is an info message.")
@@ -220,8 +227,19 @@ import (
     debuglog "github.com/ilbw97/debuglog"
 )
 func main() {
-    logger := debuglog.DebugLogInit("example", true, false, false)
-    logger.Info("This log will only be written to the log file.")
+    logConfig := &debuglog.LogConfig{
+        LogName:     "myapp",
+        MakeDir:     true,
+        UsePID:      false,
+        UseMultiWriter: false,
+        LogRotateConfig: debuglog.LogRotateConfig{
+            MaxSize:    100,
+            MaxBackups: 5,
+            MaxAge:     7,
+            Compress:   true,
+        },
+    }
+    logger := debuglog.LogInit(logConfig)
 }
 ```
 
@@ -235,12 +253,12 @@ func main() {
 
 ```go
 logConfig := &debuglog.LogConfig{
-    LogName:     "myapp",
-    MakeDir:     true,
-    UsePID:      true,
+    LogName:        "myapp",
+    MakeDir:        true,
+    UsePID:         true,
     UseMultiWriter: true,
 }
-logger := debuglog.DebugLogInit(logConfig)
+logger := debuglog.LogInit(logConfig)
 
 ```
 
@@ -248,23 +266,12 @@ logger := debuglog.DebugLogInit(logConfig)
 
 ```go
 logConfig := &debuglog.LogConfig{
-    LogName:     "myapp",
-    MakeDir:     true,
-    UsePID:      false,
+    LogName:        "myapp",
+    MakeDir:        true,
+    UsePID:         false,
     UseMultiWriter: false,
 }
-logger := debuglog.DebugLogInit(logConfig)
-```
-
-3. 환경 변수로 경로 변경:
-
-```bash
-export LOG_BASE_PATH=/tmp/logs
-```
-
-```go
-logger := debuglog.DebugLogInit("test", true, false, false)
-logger.Info("Test log with custom base path.")
+logger := debuglog.LogInit(logConfig)
 ```
 
 ---
